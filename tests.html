@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>RM換算・MAX計算機 ロジックのテスト</title>
+<style>
+  body { font-family: system-ui, "Yu Gothic UI", Meiryo, sans-serif; margin: 16px; line-height: 1.6; background: #fff; color: #1a1d21; }
+  #summary { font-size: 1.25rem; font-weight: 700; }
+  .pass { color: #2b8a3e; }
+  .fail { color: #c92a2a; font-weight: 700; }
+</style>
+</head>
+<body>
+<h1>ロジックのテスト</h1>
+<p id="summary">実行中…</p>
+<ul id="results"></ul>
+
+<script src="js/rm-calc.js"></script>
+<script>
+(function () {
+  'use strict';
+  const RM = window.RM;
+  const results = [];
+  function test(name, fn) {
+    try { fn(); results.push({ name, ok: true }); }
+    catch (e) { results.push({ name, ok: false, msg: e && e.message ? e.message : String(e) }); }
+  }
+  function eq(a, b, label) {
+    const x = JSON.stringify(a), y = JSON.stringify(b);
+    if (x !== y) throw new Error((label ? label + ': ' : '') + '期待値 ' + y + ' / 実際 ' + x);
+  }
+  function near(a, b, label, tol) {
+    if (!(Math.abs(a - b) <= (tol || 1e-6))) throw new Error((label ? label + ': ' : '') + '期待値 ' + b + ' / 実際 ' + a);
+  }
+  function ok(c, label) { if (!c) throw new Error(label || '条件を満たしていません'); }
+  const byId = id => RM.FORMULAS.find(f => f.id === id);
+
+  test('4つの式は、LeSuer 1997 の表（5・9・10回でMAXの何%か）と一致する', () => {
+    // Brzycki の9回は表に「87」とあるが、式から計算すると78になるため78で確かめる（ベンチプレス伸び計算機と同じ）
+    const table = { brzycki: [89, 78, 75], epley: [86, 77, 75], mayhew: [84, 78, 76], lombardi: [85, 80, 79] };
+    Object.keys(table).forEach(id => [5, 9, 10].forEach((r, i) => {
+      near(Math.round(100 / byId(id).calc(1, r)), table[id][i], id + ' ' + r + '回', 0);
+    }));
+  });
+  test('計算に使うMAXは Brzycki の式：100kg×5回 → 112.51kg、80kg×5回 → 90.01kg', () => {
+    eq(RM.estimate(100, 5).main, 112.51);
+    eq(RM.estimate(80, 5).main, 90.01);
+    ok(RM.estimate(80, 5).list.find(f => f.main).id === 'brzycki');
+  });
+  test('1回ならその重さ、10回を超えたら10回として計算', () => {
+    const e1 = RM.estimate(100, 1);
+    ok(e1.list.every(f => f.value === 100), '1回');
+    eq([e1.used, e1.capped, e1.min, e1.max], [1, false, 100, 100]);
+    const e15 = RM.estimate(60, 15);
+    eq([e15.reps, e15.used, e15.capped], [15, 10, true]);
+    eq(e15.list.map(f => f.value), RM.estimate(60, 10).list.map(f => f.value));
+  });
+  test('入力がおかしいときは null', () => {
+    eq(RM.estimate(0, 5), null);
+    eq(RM.estimate(80, 0), null);
+    eq(RM.estimate('', ''), null);
+  });
+  test('4つの式の値と幅：80kg×5回 → 90.01〜95.2kg（Brzycki が最小、Mayhew が最大）', () => {
+    const e = RM.estimate(80, 5);
+    eq(e.list.map(f => f.id), ['brzycki', 'epley', 'mayhew', 'lombardi']);
+    eq(e.list.find(f => f.id === 'epley').value, 93.33); // 80 × (1 + 5/30)
+    near(e.list.find(f => f.id === 'lombardi').value, 80 * Math.pow(5, 0.1), 'Lombardi', 0.005);
+    eq([e.min, e.max], [90.01, e.list.find(f => f.id === 'mayhew').value]);
+    near(e.max, 95.2, 'Mayhew', 0.01);
+  });
+  test('RM換算表：MAX 90kg → 1〜10回で 90, 87.5, … 67.5kg', () => {
+    eq(RM.rmTable(90).map(r => r.weight), [90, 87.5, 85, 82.5, 80, 77.5, 75, 72.5, 70, 67.5]);
+    eq(RM.rmTable(90).map(r => r.reps), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+    near(RM.rmTable(90)[0].pct, 100, '1回は100%');
+    near(RM.rmTable(90)[9].pct, 74.98, '10回は74.98%（表示は75%）');
+  });
+  test('RM換算表は入力と往復する：重さ×回数 → MAX → その回数の行が元の重さ', () => {
+    [[80, 5], [60, 10], [100, 3], [140, 8], [42.5, 6]].forEach(([w, r]) => {
+      const row = RM.rmTable(RM.estimate(w, r).main)[r - 1];
+      near(row.exact, w, w + 'kg×' + r + '回', 0.01);
+    });
+  });
+  test('表の重さは2.5kg刻み', () => {
+    [37, 63.3, 91, 155.5].forEach(m => RM.rmTable(m).concat(RM.pctTable(m)).forEach(r => {
+      near(r.weight / 2.5, Math.round(r.weight / 2.5), 'MAX ' + m, 1e-9);
+    }));
+  });
+  test('MAXの何%で何回：Nuzzo 2024 の表（MAX 100kg）', () => {
+    const t = RM.pctTable(100);
+    eq(t.map(r => r.pct), [95, 90, 85, 80, 75, 70, 65, 60]);
+    eq(t.map(r => r.weight), [95, 90, 85, 80, 75, 70, 65, 60]);
+    eq([t[0].lo, t[0].hi], [1, 4]);    // 2.59 ± 1.25
+    eq([t[3].lo, t[3].hi], [7, 11]);   // 8.82 ± 1.99
+    eq([t[7].lo, t[7].hi], [16, 23]);  // 19.34 ± 3.70
+  });
+  test('入力のチェック', () => {
+    eq(RM.validate(RM.normalizeInput({ weight: '80', reps: '5' })), []);
+    eq(RM.validate(RM.normalizeInput({ weight: '', reps: '5' })).length, 1);
+    eq(RM.validate(RM.normalizeInput({ weight: '80', reps: '0' })).length, 1);
+    eq(RM.validate(RM.normalizeInput({ weight: '600', reps: '31' })).length, 2);
+    eq(RM.normalizeInput({ weight: '80', reps: '5.4' }).reps, 5);
+  });
+
+  const failed = results.filter(r => !r.ok);
+  const summary = document.getElementById('summary');
+  summary.textContent = failed.length ? failed.length + ' 件失敗 / ' + results.length + ' 件' : 'ALL PASS ' + results.length;
+  summary.className = failed.length ? 'fail' : 'pass';
+  const list = document.getElementById('results');
+  results.forEach(r => {
+    const li = document.createElement('li');
+    li.className = r.ok ? 'pass' : 'fail';
+    li.textContent = (r.ok ? '✓ ' : '✗ ') + r.name + (r.ok ? '' : ' — ' + r.msg);
+    list.appendChild(li);
+  });
+})();
+</script>
+</body>
+</html>

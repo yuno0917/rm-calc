@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>RM換算・MAX計算機｜重さ×回数から1RMを計算【早見表つき】</title>
+<meta name="description" content="挙げた重さと回数を入れるだけで、MAX（1RM）と、何kgなら何回できるかのRM換算表を出します。ベンチプレス・スクワット・デッドリフトに使えます。4つの計算式の比較、重さ×回数の早見表、根拠の論文つき。無料・登録不要。">
+<link rel="canonical" href="https://yuno-lab.com/rm-calc/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="RM換算・MAX計算機">
+<meta property="og:description" content="重さと回数から、MAX（1RM）と何kgなら何回できるかを計算します。ベンチプレス・スクワット・デッドリフトの早見表つき。">
+<meta property="og:url" content="https://yuno-lab.com/rm-calc/">
+<meta property="og:image" content="https://yuno-lab.com/rm-calc/og.png">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#d9480f">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="css/style.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "RM換算・MAX計算機",
+  "url": "https://yuno-lab.com/rm-calc/",
+  "description": "挙げた重さと回数から、MAX（1RM）と、何kgなら何回できるかのRM換算表を計算するWebツール。ベンチプレス・スクワット・デッドリフトに対応。",
+  "applicationCategory": "HealthApplication",
+  "operatingSystem": "All",
+  "inLanguage": "ja",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "JPY" }
+}
+</script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7280043806672538"
+     crossorigin="anonymous"></script>
+</head>
+<body>
+
+<nav class="topnav" aria-label="サイト内">
+  <div class="wrap">
+    <a class="brand" href="index.html"><img src="favicon.svg" alt="" width="26" height="26">RM換算・MAX計算機</a>
+    <ul>
+      <li><a class="navlink" href="index.html" aria-current="page">計算する</a></li>
+      <li><a class="navlink" href="#table">早見表</a></li>
+      <li><a class="navlink" href="/">yuno-lab</a></li>
+    </ul>
+  </div>
+</nav>
+
+<header class="site-header">
+  <div class="wrap">
+    <h1>RM換算・MAX計算機</h1>
+    <p class="lead">挙げた重さと回数から、MAX（1RM）と、何kgなら何回できるかを計算します。ベンチプレス・スクワット・デッドリフトに使えます。</p>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="card" id="form-section" aria-labelledby="form-title">
+    <h2 id="form-title">挙げた重さと回数</h2>
+    <form id="calc-form" novalidate>
+      <p class="error" id="form-error" role="alert" hidden></p>
+      <div class="field form-field">
+        <span class="field-name" id="lift-label">限界まで挙げた重さと回数</span>
+        <div>
+          <span class="num"><input type="number" name="weight" inputmode="decimal" min="1" max="500" step="0.5" placeholder="80" aria-label="挙げた重さ（kg）"><span class="unit">kg</span></span>
+          <span class="times">×</span>
+          <span class="num"><input type="number" name="reps" inputmode="numeric" min="1" max="30" step="1" placeholder="5" aria-label="回数"><span class="unit">rep</span></span>
+        </div>
+        <p class="hint">10回以下が正確です。MAXがわかっているときは、回数に1を入れると、MAXから換算表を作れます。</p>
+      </div>
+      <button type="submit" class="primary">計算する</button>
+    </form>
+  </section>
+
+  <section id="result" aria-labelledby="result-title" hidden>
+    <div class="card">
+      <h2 id="result-title">推定MAX</h2>
+      <p class="big-range" id="big-range"></p>
+      <p class="hint" id="max-note"></p>
+      <div class="actions">
+        <a class="btn-link" id="bench-link" href="/bench-program/">このMAXでベンチプレスのプログラムを作る</a>
+        <a id="squat-link" href="/squat-program/">スクワットのプログラムを作る</a>
+        <button type="button" class="secondary" id="share-btn">リンクをコピー</button>
+      </div>
+      <div class="share-box" id="share-box" hidden>
+        <input type="text" id="share-url" readonly aria-label="共有リンク">
+        <p class="share-status" id="share-status" role="status"></p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>RM換算表：何回なら何kgか</h2>
+      <div class="table-wrap">
+        <table class="data-table" id="rm-table">
+          <thead><tr><th scope="col">回数</th><th scope="col">重さ</th><th scope="col">MAXの</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <p class="hint">Brzycki の式で計算し、2.5kg刻みに丸めています。<a class="cite-chip" href="#ref-1">根拠</a></p>
+    </div>
+
+    <div class="card">
+      <h2>MAXの何%で何回できるか</h2>
+      <div class="table-wrap">
+        <table class="data-table" id="pct-table">
+          <thead><tr><th scope="col">MAXの</th><th scope="col">重さ</th><th scope="col">限界までの回数</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <p class="hint">ベンチプレスの269の研究をまとめた平均です。かっこの中は、多くの人が入る範囲です。スクワットは、同じ割合でもこれより多くできます。<a class="cite-chip" href="#ref-7">根拠</a></p>
+    </div>
+
+    <div class="card" id="formula-card" hidden>
+      <h2>4つの計算式で出したMAX</h2>
+      <div id="formula-box"></div>
+    </div>
+  </section>
+
+  <section class="card article" aria-labelledby="about-title">
+    <h2 id="about-title">RM換算とは</h2>
+    <p>RM（レップマックス）は、「何回まで挙げられる重さか」を表します。1回だけ挙げられる重さが1RM（MAX）、5回が限界の重さが5RMです。</p>
+    <p>MAXを実際に測るのは、重さに慣れていないと危険です。そこで、10回以下で限界まで挙げた重さと回数から、計算式でMAXを推定します。この計算機は、ベンチプレスの研究で最も正確だった Brzycki の式を使います。</p>
+
+    <h2 id="table">早見表：重さ×回数からMAX</h2>
+    <p>限界まで挙げた重さ（左の列）と回数（上の行）が交わるところが、推定MAXです。Brzycki の式で計算し、1kg単位に丸めています。</p>
+    <div class="table-wrap">
+      <table class="data-table">
+        <caption>重さ×回数から出した推定MAX（kg）</caption>
+        <thead><tr><th scope="col">重さ</th><th scope="col">2回</th><th scope="col">3回</th><th scope="col">4回</th><th scope="col">5回</th><th scope="col">6回</th><th scope="col">7回</th><th scope="col">8回</th><th scope="col">9回</th><th scope="col">10回</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">30kg</th><td class="cell-num">31</td><td class="cell-num">32</td><td class="cell-num">33</td><td class="cell-num">34</td><td class="cell-num">35</td><td class="cell-num">36</td><td class="cell-num">37</td><td class="cell-num">39</td><td class="cell-num">40</td></tr>
+          <tr><th scope="row">35kg</th><td class="cell-num">36</td><td class="cell-num">37</td><td class="cell-num">38</td><td class="cell-num">39</td><td class="cell-num">41</td><td class="cell-num">42</td><td class="cell-num">43</td><td class="cell-num">45</td><td class="cell-num">47</td></tr>
+          <tr><th scope="row">40kg</th><td class="cell-num">41</td><td class="cell-num">42</td><td class="cell-num">44</td><td class="cell-num">45</td><td class="cell-num">46</td><td class="cell-num">48</td><td class="cell-num">50</td><td class="cell-num">51</td><td class="cell-num">53</td></tr>
+          <tr><th scope="row">45kg</th><td class="cell-num">46</td><td class="cell-num">48</td><td class="cell-num">49</td><td class="cell-num">51</td><td class="cell-num">52</td><td class="cell-num">54</td><td class="cell-num">56</td><td class="cell-num">58</td><td class="cell-num">60</td></tr>
+          <tr><th scope="row">50kg</th><td class="cell-num">51</td><td class="cell-num">53</td><td class="cell-num">55</td><td class="cell-num">56</td><td class="cell-num">58</td><td class="cell-num">60</td><td class="cell-num">62</td><td class="cell-num">64</td><td class="cell-num">67</td></tr>
+          <tr><th scope="row">55kg</th><td class="cell-num">57</td><td class="cell-num">58</td><td class="cell-num">60</td><td class="cell-num">62</td><td class="cell-num">64</td><td class="cell-num">66</td><td class="cell-num">68</td><td class="cell-num">71</td><td class="cell-num">73</td></tr>
+          <tr><th scope="row">60kg</th><td class="cell-num">62</td><td class="cell-num">64</td><td class="cell-num">65</td><td class="cell-num">68</td><td class="cell-num">70</td><td class="cell-num">72</td><td class="cell-num">74</td><td class="cell-num">77</td><td class="cell-num">80</td></tr>
+          <tr><th scope="row">65kg</th><td class="cell-num">67</td><td class="cell-num">69</td><td class="cell-num">71</td><td class="cell-num">73</td><td class="cell-num">75</td><td class="cell-num">78</td><td class="cell-num">81</td><td class="cell-num">84</td><td class="cell-num">87</td></tr>
+          <tr><th scope="row">70kg</th><td class="cell-num">72</td><td class="cell-num">74</td><td class="cell-num">76</td><td class="cell-num">79</td><td class="cell-num">81</td><td class="cell-num">84</td><td class="cell-num">87</td><td class="cell-num">90</td><td class="cell-num">93</td></tr>
+          <tr><th scope="row">75kg</th><td class="cell-num">77</td><td class="cell-num">79</td><td class="cell-num">82</td><td class="cell-num">84</td><td class="cell-num">87</td><td class="cell-num">90</td><td class="cell-num">93</td><td class="cell-num">96</td><td class="cell-num">100</td></tr>
+          <tr><th scope="row">80kg</th><td class="cell-num">82</td><td class="cell-num">85</td><td class="cell-num">87</td><td class="cell-num">90</td><td class="cell-num">93</td><td class="cell-num">96</td><td class="cell-num">99</td><td class="cell-num">103</td><td class="cell-num">107</td></tr>
+          <tr><th scope="row">85kg</th><td class="cell-num">87</td><td class="cell-num">90</td><td class="cell-num">93</td><td class="cell-num">96</td><td class="cell-num">99</td><td class="cell-num">102</td><td class="cell-num">106</td><td class="cell-num">109</td><td class="cell-num">113</td></tr>
+          <tr><th scope="row">90kg</th><td class="cell-num">93</td><td class="cell-num">95</td><td class="cell-num">98</td><td class="cell-num">101</td><td class="cell-num">105</td><td class="cell-num">108</td><td class="cell-num">112</td><td class="cell-num">116</td><td class="cell-num">120</td></tr>
+          <tr><th scope="row">95kg</th><td class="cell-num">98</td><td class="cell-num">101</td><td class="cell-num">104</td><td class="cell-num">107</td><td class="cell-num">110</td><td class="cell-num">114</td><td class="cell-num">118</td><td class="cell-num">122</td><td class="cell-num">127</td></tr>
+          <tr><th scope="row">100kg</th><td class="cell-num">103</td><td class="cell-num">106</td><td class="cell-num">109</td><td class="cell-num">113</td><td class="cell-num">116</td><td class="cell-num">120</td><td class="cell-num">124</td><td class="cell-num">129</td><td class="cell-num">133</td></tr>
+          <tr><th scope="row">105kg</th><td class="cell-num">108</td><td class="cell-num">111</td><td class="cell-num">115</td><td class="cell-num">118</td><td class="cell-num">122</td><td class="cell-num">126</td><td class="cell-num">130</td><td class="cell-num">135</td><td class="cell-num">140</td></tr>
+          <tr><th scope="row">110kg</th><td class="cell-num">113</td><td class="cell-num">116</td><td class="cell-num">120</td><td class="cell-num">124</td><td class="cell-num">128</td><td class="cell-num">132</td><td class="cell-num">137</td><td class="cell-num">141</td><td class="cell-num">147</td></tr>
+          <tr><th scope="row">115kg</th><td class="cell-num">118</td><td class="cell-num">122</td><td class="cell-num">125</td><td class="cell-num">129</td><td class="cell-num">134</td><td class="cell-num">138</td><td class="cell-num">143</td><td class="cell-num">148</td><td class="cell-num">153</td></tr>
+          <tr><th scope="row">120kg</th><td class="cell-num">123</td><td class="cell-num">127</td><td class="cell-num">131</td><td class="cell-num">135</td><td class="cell-num">139</td><td class="cell-num">144</td><td class="cell-num">149</td><td class="cell-num">154</td><td class="cell-num">160</td></tr>
+          <tr><th scope="row">125kg</th><td class="cell-num">129</td><td class="cell-num">132</td><td class="cell-num">136</td><td class="cell-num">141</td><td class="cell-num">145</td><td class="cell-num">150</td><td class="cell-num">155</td><td class="cell-num">161</td><td class="cell-num">167</td></tr>
+          <tr><th scope="row">130kg</th><td class="cell-num">134</td><td class="cell-num">138</td><td class="cell-num">142</td><td class="cell-num">146</td><td class="cell-num">151</td><td class="cell-num">156</td><td class="cell-num">161</td><td class="cell-num">167</td><td class="cell-num">173</td></tr>
+          <tr><th scope="row">135kg</th><td class="cell-num">139</td><td class="cell-num">143</td><td class="cell-num">147</td><td class="cell-num">152</td><td class="cell-num">157</td><td class="cell-num">162</td><td class="cell-num">168</td><td class="cell-num">174</td><td class="cell-num">180</td></tr>
+          <tr><th scope="row">140kg</th><td class="cell-num">144</td><td class="cell-num">148</td><td class="cell-num">153</td><td class="cell-num">158</td><td class="cell-num">163</td><td class="cell-num">168</td><td class="cell-num">174</td><td class="cell-num">180</td><td class="cell-num">187</td></tr>
+          <tr><th scope="row">145kg</th><td class="cell-num">149</td><td class="cell-num">154</td><td class="cell-num">158</td><td class="cell-num">163</td><td class="cell-num">168</td><td class="cell-num">174</td><td class="cell-num">180</td><td class="cell-num">186</td><td class="cell-num">193</td></tr>
+          <tr><th scope="row">150kg</th><td class="cell-num">154</td><td class="cell-num">159</td><td class="cell-num">164</td><td class="cell-num">169</td><td class="cell-num">174</td><td class="cell-num">180</td><td class="cell-num">186</td><td class="cell-num">193</td><td class="cell-num">200</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <details class="more">
+    <summary>MAXから、何回なら何kgかの早見表を見る</summary>
+    <div class="table-wrap">
+      <table class="data-table">
+        <caption>MAXから出した、それぞれの回数が限界になる重さ（kg・2.5kg刻み）</caption>
+        <thead><tr><th scope="col">MAX</th><th scope="col">2回</th><th scope="col">3回</th><th scope="col">4回</th><th scope="col">5回</th><th scope="col">6回</th><th scope="col">7回</th><th scope="col">8回</th><th scope="col">9回</th><th scope="col">10回</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">40kg</th><td class="cell-num">40</td><td class="cell-num">37.5</td><td class="cell-num">37.5</td><td class="cell-num">35</td><td class="cell-num">35</td><td class="cell-num">32.5</td><td class="cell-num">32.5</td><td class="cell-num">30</td><td class="cell-num">30</td></tr>
+          <tr><th scope="row">50kg</th><td class="cell-num">47.5</td><td class="cell-num">47.5</td><td class="cell-num">45</td><td class="cell-num">45</td><td class="cell-num">42.5</td><td class="cell-num">42.5</td><td class="cell-num">40</td><td class="cell-num">40</td><td class="cell-num">37.5</td></tr>
+          <tr><th scope="row">60kg</th><td class="cell-num">57.5</td><td class="cell-num">57.5</td><td class="cell-num">55</td><td class="cell-num">52.5</td><td class="cell-num">52.5</td><td class="cell-num">50</td><td class="cell-num">47.5</td><td class="cell-num">47.5</td><td class="cell-num">45</td></tr>
+          <tr><th scope="row">70kg</th><td class="cell-num">67.5</td><td class="cell-num">65</td><td class="cell-num">65</td><td class="cell-num">62.5</td><td class="cell-num">60</td><td class="cell-num">57.5</td><td class="cell-num">57.5</td><td class="cell-num">55</td><td class="cell-num">52.5</td></tr>
+          <tr><th scope="row">80kg</th><td class="cell-num">77.5</td><td class="cell-num">75</td><td class="cell-num">72.5</td><td class="cell-num">70</td><td class="cell-num">70</td><td class="cell-num">67.5</td><td class="cell-num">65</td><td class="cell-num">62.5</td><td class="cell-num">60</td></tr>
+          <tr><th scope="row">90kg</th><td class="cell-num">87.5</td><td class="cell-num">85</td><td class="cell-num">82.5</td><td class="cell-num">80</td><td class="cell-num">77.5</td><td class="cell-num">75</td><td class="cell-num">72.5</td><td class="cell-num">70</td><td class="cell-num">67.5</td></tr>
+          <tr><th scope="row">100kg</th><td class="cell-num">97.5</td><td class="cell-num">95</td><td class="cell-num">92.5</td><td class="cell-num">90</td><td class="cell-num">85</td><td class="cell-num">82.5</td><td class="cell-num">80</td><td class="cell-num">77.5</td><td class="cell-num">75</td></tr>
+          <tr><th scope="row">110kg</th><td class="cell-num">107.5</td><td class="cell-num">105</td><td class="cell-num">100</td><td class="cell-num">97.5</td><td class="cell-num">95</td><td class="cell-num">92.5</td><td class="cell-num">87.5</td><td class="cell-num">85</td><td class="cell-num">82.5</td></tr>
+          <tr><th scope="row">120kg</th><td class="cell-num">117.5</td><td class="cell-num">112.5</td><td class="cell-num">110</td><td class="cell-num">107.5</td><td class="cell-num">102.5</td><td class="cell-num">100</td><td class="cell-num">97.5</td><td class="cell-num">92.5</td><td class="cell-num">90</td></tr>
+          <tr><th scope="row">130kg</th><td class="cell-num">127.5</td><td class="cell-num">122.5</td><td class="cell-num">120</td><td class="cell-num">115</td><td class="cell-num">112.5</td><td class="cell-num">107.5</td><td class="cell-num">105</td><td class="cell-num">100</td><td class="cell-num">97.5</td></tr>
+          <tr><th scope="row">140kg</th><td class="cell-num">135</td><td class="cell-num">132.5</td><td class="cell-num">127.5</td><td class="cell-num">125</td><td class="cell-num">120</td><td class="cell-num">117.5</td><td class="cell-num">112.5</td><td class="cell-num">110</td><td class="cell-num">105</td></tr>
+          <tr><th scope="row">150kg</th><td class="cell-num">145</td><td class="cell-num">142.5</td><td class="cell-num">137.5</td><td class="cell-num">132.5</td><td class="cell-num">130</td><td class="cell-num">125</td><td class="cell-num">120</td><td class="cell-num">117.5</td><td class="cell-num">112.5</td></tr>
+          <tr><th scope="row">160kg</th><td class="cell-num">155</td><td class="cell-num">150</td><td class="cell-num">147.5</td><td class="cell-num">142.5</td><td class="cell-num">137.5</td><td class="cell-num">132.5</td><td class="cell-num">130</td><td class="cell-num">125</td><td class="cell-num">120</td></tr>
+          <tr><th scope="row">170kg</th><td class="cell-num">165</td><td class="cell-num">160</td><td class="cell-num">155</td><td class="cell-num">150</td><td class="cell-num">147.5</td><td class="cell-num">142.5</td><td class="cell-num">137.5</td><td class="cell-num">132.5</td><td class="cell-num">127.5</td></tr>
+          <tr><th scope="row">180kg</th><td class="cell-num">175</td><td class="cell-num">170</td><td class="cell-num">165</td><td class="cell-num">160</td><td class="cell-num">155</td><td class="cell-num">150</td><td class="cell-num">145</td><td class="cell-num">140</td><td class="cell-num">135</td></tr>
+          <tr><th scope="row">190kg</th><td class="cell-num">185</td><td class="cell-num">180</td><td class="cell-num">175</td><td class="cell-num">170</td><td class="cell-num">162.5</td><td class="cell-num">157.5</td><td class="cell-num">152.5</td><td class="cell-num">147.5</td><td class="cell-num">142.5</td></tr>
+          <tr><th scope="row">200kg</th><td class="cell-num">195</td><td class="cell-num">190</td><td class="cell-num">182.5</td><td class="cell-num">177.5</td><td class="cell-num">172.5</td><td class="cell-num">167.5</td><td class="cell-num">160</td><td class="cell-num">155</td><td class="cell-num">150</td></tr>
+        </tbody>
+      </table>
+    </div>
+    </details>
+
+    <h2 id="lifts">スクワット・デッドリフトで使うときの注意</h2>
+    <p>計算式の多くは、ベンチプレスのデータから作られています。脚や背中の種目では、同じ割合の重さでも、できる回数が変わります。</p>
+    <ul>
+      <li>男性16人の研究では、MAXの80%でできた回数が、ベンチプレスで約9回、スクワットで約12回でした。60%では、ベンチプレスが約22回、スクワットが約30〜36回でした<a class="cite-chip" href="#ref-6">6</a>。そのため、回数が多いと、スクワットのMAXは高めに出ることがあります。</li>
+      <li>大学生67人の研究では、どの式でも、デッドリフトのMAXが実際より低く出ました<a class="cite-chip" href="#ref-5">5</a>。</li>
+    </ul>
+    <p>男性16人の研究では、重い重さ（回数が少ないとき）ほど、種目による差が小さくなりました<a class="cite-chip" href="#ref-6">6</a>。スクワットとデッドリフトは、5回前後で限界になる重さで計算するのがおすすめです。</p>
+
+    <h2>よくある質問</h2>
+    <div class="faq">
+      <details><summary>何回で計算するのが一番正確ですか？</summary><p>男女70人の研究では、5回の重さからの予測が最も正確で、式に使う回数は10回までにするべきだとしています<a class="cite-chip" href="#ref-3">3</a>。女性103人の研究でも、10回未満のほうが正確でした<a class="cite-chip" href="#ref-4">4</a>。11回以上を入れたときは、10回として計算します。</p></details>
+      <details><summary>推定したMAXは、どれくらい当たりますか？</summary><p>筋トレ習慣のない男性50人が7〜10回挙げた研究では、Brzycki の式の誤差は平均0.22kg、人によるばらつきは2.42kg（3.4%）でした<a class="cite-chip" href="#ref-2">2</a>。多くの人は数%以内に入りますが、人によって5〜10%ずれることもあります。</p></details>
+      <details><summary>どの計算式を使えばいいですか？</summary><p>ベンチプレスで220人の男性を調べた研究では、10回以下の場合に Brzycki の式が最も正確でした<a class="cite-chip" href="#ref-1">1</a>。この計算機は Brzycki の式を使い、Epley・Mayhew・Lombardi の式の値も並べています。</p></details>
+      <details><summary>ベンチプレスは、胸で止めて挙げた回数を入れますか？</summary><p>ふだんの練習と同じやり方で挙げた回数を入れてください。113人を調べた研究では、胸で止めずに挙げたMAXは、胸で止めたときより約8%重くなりました<a class="cite-chip" href="#ref-8">8</a>。大会のように胸で止めるなら、止めて挙げた回数で計算します。</p></details>
+      <details><summary>限界まで挙げていないときはどうなりますか？</summary><p>余力を残して止めた回数を入れると、MAXは低く出ます。「あと何回できたか」がわかるなら、その回数を足して入れてください。</p></details>
+    </div>
+
+    <h2>MAXがわかったら</h2>
+    <ul class="link-list">
+      <li><a href="/bench-program/">ベンチプレス プログラムメーカー</a>：MAXから、毎回の重さと回数を決めた数週間のプログラムを作ります。</li>
+      <li><a href="/squat-program/">スクワット プログラムメーカー</a>：スクワットの同じ仕組みのプログラムです。</li>
+      <li><a href="/bench-goal/">ベンチプレス伸び計算機</a>：何週間で何kg伸びるかを、研究のデータで予測します。</li>
+      <li><a href="/big3-menu/">BIG3 メニューメーカー</a>：スクワット・ベンチプレス・デッドリフトの8週間メニューを作ります。</li>
+    </ul>
+
+    <h2 id="refs">参考文献</h2>
+    <ol class="ref-list">
+      <li id="ref-1">Mayhew, J. L., Prinster, J. L., Ware, J. S., Zimmer, D. L., Arabas, J. R., &amp; Bemben, M. G. (1995). Muscular endurance repetitions to predict bench press strength in men of different training levels. <i>Journal of Sports Medicine and Physical Fitness, 35</i>(2), 108–113. <a href="https://pubmed.ncbi.nlm.nih.gov/7500624/">PubMed 7500624</a></li>
+      <li id="ref-2">Nascimento, M. A., Cyrino, E. S., Nakamura, F. Y., Romanzini, M., Pianca, H. J. C., &amp; Queiróga, M. R. (2007). Validação da equação de Brzycki para a estimativa de 1-RM no exercício supino em banco horizontal. <i>Revista Brasileira de Medicina do Esporte, 13</i>(1), 47–50. <a href="https://doi.org/10.1590/S1517-86922007000100011">doi:10.1590/S1517-86922007000100011</a></li>
+      <li id="ref-3">Reynolds, J. M., Gordon, T. J., &amp; Robergs, R. A. (2006). Prediction of one repetition maximum strength from multiple repetition maximum testing and anthropometry. <i>Journal of Strength and Conditioning Research, 20</i>(3), 584–592. <a href="https://doi.org/10.1519/R-15304.1">doi:10.1519/R-15304.1</a></li>
+      <li id="ref-4">Mayhew, J. L., Johnson, B. D., LaMonte, M. J., Lauber, D., &amp; Kemmler, W. (2008). Accuracy of prediction equations for determining one repetition maximum bench press in women before and after resistance training. <i>Journal of Strength and Conditioning Research, 22</i>(5), 1570–1577. <a href="https://doi.org/10.1519/JSC.0b013e31817b02ad">doi:10.1519/JSC.0b013e31817b02ad</a></li>
+      <li id="ref-5">LeSuer, D. A., McCormick, J. H., Mayhew, J. L., Wasserstein, R. L., &amp; Arnold, M. D. (1997). The accuracy of prediction equations for estimating 1-RM performance in the bench press, squat, and deadlift. <i>Journal of Strength and Conditioning Research, 11</i>(4), 211–213. <a href="https://journals.lww.com/nsca-jscr/abstract/1997/11000/the_accuracy_of_prediction_equations_for.1.aspx">要旨</a></li>
+      <li id="ref-6">Shimano, T., Kraemer, W. J., Spiering, B. A., et al. (2006). Relationship between the number of repetitions and selected percentages of one repetition maximum in free weight exercises in trained and untrained men. <i>Journal of Strength and Conditioning Research, 20</i>(4), 819–823. <a href="https://doi.org/10.1519/R-18195.1">doi:10.1519/R-18195.1</a></li>
+      <li id="ref-7">Nuzzo, J. L., Pinto, M. D., Nosaka, K., &amp; Steele, J. (2024). Maximal number of repetitions at percentages of the one repetition maximum: A meta-regression and moderator analysis of sex, age, training status, and exercise. <i>Sports Medicine, 54</i>(2), 303–321. <a href="https://doi.org/10.1007/s40279-023-01937-7">doi:10.1007/s40279-023-01937-7</a></li>
+      <li id="ref-8">García-Ramos, A., Janicijevic, D., &amp; Jukic, I. (2021). Concentric-only versus touch-and-go bench press one-repetition maximum in men and women. <i>Sports Health, 13</i>(4), 373–379. <a href="https://doi.org/10.1177/1941738120977861">doi:10.1177/1941738120977861</a></li>
+    </ol>
+
+    <h2 id="disclaimer">免責事項</h2>
+    <div class="disclaimer">
+      <p>この計算機の結果は、研究の平均的な関係から出した目安です。個人の体調やケガの経歴は考慮していません。持病がある方や体調に不安がある方は、医師に相談してから始めてください。</p>
+      <p>限界まで挙げるときやMAXを測るときは、補助者をつけるか、セーフティバーを正しい高さにして行ってください。トレーニングは自己責任で行ってください。このツールの利用によって生じたケガや損害について、運営者は責任を負いません。</p>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <a href="/">yuno-lab トップ</a>
+    <span aria-hidden="true">・</span>
+    <a href="/bench-program/">ベンチプレス プログラムメーカー</a>
+    <span aria-hidden="true">・</span>
+    <a href="/about.html">このサイトについて</a>
+    <span aria-hidden="true">・</span>
+    <a href="/privacy.html">プライバシーポリシー</a>
+    <span aria-hidden="true">・</span>
+    <a href="#disclaimer">免責事項</a>
+  </div>
+</footer>
+
+<script src="js/rm-calc.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
